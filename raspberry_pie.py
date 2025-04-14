@@ -50,13 +50,13 @@ def collect_soil_data():
 
 def export_data_to_excel():
     df = pd.DataFrame(moisture_data)
-    excel_filename = "soil_moisture_with_images.xlsx"
+    excel_filename = os.path.join(image_folder, "soil_moisture_with_images.xlsx")
     df.to_excel(excel_filename, index=False)
     print(f"\nExcel saved as '{excel_filename}'")
 
 def create_excel_file():
     now = datetime.now()
-    filename = f"interrupted_{now.strftime('%Y%m%d_%H%M%S')}.xlsx"
+    filename = os.path.join(image_folder, f"interrupted_{now.strftime('%Y%m%d_%H%M%S')}.xlsx")
     wb = Workbook()
     ws = wb.active
     ws.title = "Data"
