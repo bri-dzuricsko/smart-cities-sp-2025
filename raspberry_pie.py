@@ -14,7 +14,7 @@ image_folder = "soil_images"
 os.makedirs(image_folder, exist_ok=True)
 
 # Simulated sensor locations
-sensor_locations = ["North Field", "South Field", "East Slope", "West Garden"]
+sensor_locations = [f"Location {i+1}" for i in range(4)]
 
 # Simulated soil moisture sensor reading (replace with actual code)
 def read_soil_moisture():
@@ -29,17 +29,4 @@ def collect_soil_data():
     for location in sensor_locations:
         print(f"\n📍 Now probing location: {location}")
         for reading in range(4):  # 4 readings every 30 seconds
-            timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
-            moisture = read_soil_moisture()
-
-            print(f"   ⏱️ [{timestamp}] Moisture: {moisture}%")
-
-            moisture_data.append({
-                "timestamp": timestamp,
-                "location": location,
-                "moisture": moisture,
-                "vegetation_type": "",  # To be filled manually
-            })
-
-            if reading
-
+            timestamp = time.strftime('%
