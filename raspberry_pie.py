@@ -28,7 +28,7 @@ def collect_soil_data():
     print("Soil moisture session begins...\n")
     for location in sensor_locations:
         print(f"\nNow probing location: {location}")
-        for reading in range(4):  # 4 readings every 30 seconds
+        for reading in range(4):  # 4 readings, 15 seconds apart
             timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
             moisture = read_soil_moisture()
 
@@ -42,7 +42,7 @@ def collect_soil_data():
             })
 
             if reading < 3:
-                time.sleep(30)
+                time.sleep(15)  # 15 seconds between readings
 
     print("\nData collection complete!")
 
