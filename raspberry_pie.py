@@ -43,7 +43,8 @@ for location in sensor_locations:
 print("\n✅ Data collection complete!")
 
 # ---- EXPORT TO EXCEL ----
-ef create_excel_file():
+
+def create_excel_file():
     now = datetime.now()
     filename = f"interrupted_{now.strftime('%Y%m%d_%H%M%S')}.xlsx"
     wb = Workbook()
