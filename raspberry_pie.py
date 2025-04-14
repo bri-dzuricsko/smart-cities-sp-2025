@@ -3,7 +3,6 @@
 import time
 import random
 import pandas as pd
-import cv2
 import os
 
 # ---- SETUP ----
@@ -31,26 +30,6 @@ sensor_locations.extend([
 # Simulated soil moisture sensor reading (replace with actual code)
 def read_soil_moisture():
     return round(random.uniform(0, 100), 2)
-
-# SAFE CAMERA FUNCTION
-def capture_image(filename):
-    try:
-        cap = cv2.VideoCapture(0)
-        time.sleep(2)  # Give camera time to adjust
-        ret, frame = cap.read()
-        if ret:
-            cv2.imwrite(filename, frame)
-            print(f"   📸 Image saved: {filename}")
-            return filename
-        else:
-            print("   ⚠️ Camera found, but failed to capture image")
-            return ""  # Leave blank if capture failed
-    except Exception as e:
-        print(f"   ❌ Camera error: {e}")
-        return ""  # Leave blank if camera not available
-    finally:
-        cap.release()
-        cv2.destroyAllWindows()
 
 # ---- DATA COLLECTION ----
 
