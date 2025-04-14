@@ -1,24 +1,42 @@
 # -*- coding: utf-8 -*-
 
 import time
-import random
 import pandas as pd
 import os
 from datetime import datetime
 from openpyxl import Workbook
+import spidev
 
 # ---- SETUP ----
 
-# Create image folder
+# SPI Setup for MCP3008
+spi = spidev.SpiDev()
+spi.open(0, 0)  # Bus 0, Device 0 (CE0)
+spi.max_speed_hz = 1350000
+
+# MCP3008 analog channel where the soil sensor is connected
+ADC_CHANNEL = 0
+
+# Create folder for output
 image_folder = "soil_images"
 os.makedirs(image_folder, exist_ok=True)
 
-# Simulated sensor locations
+# Locations
 sensor_locations = [f"Location {i+1}" for i in range(4)]
 
-# Simulated soil moisture sensor reading (replace with actual code)
+# ---- READ SENSOR VIA SPI ----
+
+def read_adc(channel):
+    if not 0 <= channel <= 7:
+        return -1
+    adc = spi.xfer2([1, (8 + channel) << 4, 0])
+    result = ((adc[1] & 3) << 8) + adc[2]
+    return result
+
 def read_soil_moisture():
-    return round(random.uniform(0, 100), 2)
+    raw = read_adc(ADC_CHANNEL)
+    moisture_percent = 100 - int((raw / 1023.0) * 100)
+    return moisture_percent
 
 # ---- DATA COLLECTION ----
 
@@ -27,22 +45,21 @@ moisture_data = []
 def collect_soil_data():
     print("Soil moisture session begins...\n")
     for location in sensor_locations:
-        print(f"\nNow probing location: {location}")
-        for reading in range(4):  # 4 readings, 15 seconds apart
+        print(f"\nNow probing {location}")
+        for reading in range(4):  # 4 readings per location
             timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
             moisture = read_soil_moisture()
-
-            print(f"   [Time: {timestamp}] Moisture: {moisture}%")
+            print(f"  [{timestamp}] Moisture: {moisture}%")
 
             moisture_data.append({
                 "timestamp": timestamp,
                 "location": location,
                 "moisture": moisture,
-                "vegetation_type": "",  # To be filled manually
+                "vegetation_type": "",  # Optional
             })
 
             if reading < 3:
-                time.sleep(15)  # 15 seconds between readings
+                time.sleep(15)
 
     print("\nData collection complete!")
 
@@ -68,18 +85,18 @@ def create_excel_file():
 # ---- MAIN ----
 
 if __name__ == "__main__":
-    collect_soil_data()
-    export_data_to_excel()
-
-    print("\nRunning idle loop. Press Ctrl+C to generate an Excel file.")
     try:
+        collect_soil_data()
+        export_data_to_excel()
+
+        print("\nRunning idle loop. Press Ctrl+C to generate an Excel file.")
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
         create_excel_file()
-        print("You can press Ctrl+C again to create another one, or press Ctrl+Break (or close the window) to exit.")
-        while True:
-            try:
+        print("Press Ctrl+C again to create another one or close the terminal to exit.")
+        try:
+            while True:
                 time.sleep(1)
-            except KeyboardInterrupt:
-                create_excel_file()
+        except KeyboardInterrupt:
+            create_excel_file()
