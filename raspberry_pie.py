@@ -10,21 +10,6 @@ import os
 # Create image folder
 image_folder = "soil_images"
 os.makedirs(image_folder, exist_ok=True)
-
-# Define all 31 sensor locations
-sensor_locations = []
-
-# Quadrant points
-for i in range(1, 7):
-    sensor_locations.append(f"Northeast_{i}")
-    sensor_locations.append(f"Northwest_{i}")
-    sensor_locations.append(f"Southeast_{i}")
-    sensor_locations.append(f"Southwest_{i}")
-
-# Cardinal and center points
-sensor_locations.extend([
-    "North", "South", "East", "West", "Center_0",
-    "Center_1", "Center_2"
 ])
 
 # Simulated soil moisture sensor reading (replace with actual code)
@@ -59,6 +44,30 @@ for location in sensor_locations:
 print("\n✅ Data collection complete!")
 
 # ---- EXPORT TO EXCEL ----
+ef create_excel_file():
+    now = datetime.now()
+    filename = f"interrupted_{now.strftime('%Y%m%d_%H%M%S')}.xlsx"
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Data"
+    ws['A1'] = "This Excel file was created on interrupt."
+    ws['A2'] = now.strftime("%Y-%m-%d %H:%M:%S")
+    wb.save(filename)
+    print(f"Excel file '{filename}' created.")
+
+if __name__ == "__main__":
+    print("Running. Press Ctrl+C to generate an Excel file.")
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        create_excel_file()
+        print("You can press Ctrl+C again to create another one, or press Ctrl+Break (or close the window) to exit.")
+        while True:
+            try:
+                time.sleep(1)
+            except KeyboardInterrupt:
+                create_excel_file()
 
 df = pd.DataFrame(moisture_data)
 excel_filename = "soil_moisture_with_images.xlsx"
