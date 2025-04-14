@@ -10,7 +10,6 @@ import os
 # Create image folder
 image_folder = "soil_images"
 os.makedirs(image_folder, exist_ok=True)
-])
 
 # Simulated soil moisture sensor reading (replace with actual code)
 def read_soil_moisture():
