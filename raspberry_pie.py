@@ -35,20 +35,13 @@ def read_soil_moisture():
 
 moisture_data = []
 
-print("🌱 Soil moisture + image session begins...\n")
+print("🌱 Soil moisture session begins...\n")
 
 for location in sensor_locations:
     print(f"\n📍 Now probing location: {location}")
     for reading in range(4):  # 4 readings every 30 seconds
         timestamp = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
         moisture = read_soil_moisture()
-
-        # Generate filename for image
-        image_filename = f"img_{location}_{reading+1}.jpg"
-        image_path = os.path.join(image_folder, image_filename)
-
-        # Try to take a photo
-        safe_image_filename = capture_image(image_path)
 
         print(f"   ⏱️ [{timestamp}] Moisture: {moisture}%")
 
@@ -58,7 +51,6 @@ for location in sensor_locations:
             "location": location,
             "moisture": moisture,
             "vegetation_type": "",  # To be filled manually
-            "image_filename": safe_image_filename
         })
 
         if reading < 3:
@@ -73,4 +65,3 @@ excel_filename = "soil_moisture_with_images.xlsx"
 df.to_excel(excel_filename, index=False)
 
 print(f"\n📁 Excel saved as '{excel_filename}'")
-print(f"🖼️ Images saved in folder: {image_folder}")
