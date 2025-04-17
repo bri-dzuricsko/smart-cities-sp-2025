@@ -11,7 +11,7 @@ import spidev
 
 # SPI Setup for MCP3008
 spi = spidev.SpiDev()
-spi.open(0, 0)  # Bus 0, Device 0 (CE0)
+spi.open(0, 0)
 spi.max_speed_hz = 1350000
 
 # MCP3008 analog channel where the soil sensor is connected
