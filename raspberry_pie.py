@@ -15,7 +15,7 @@ spi = spidev.SpiDev()
 spi.open(0, 0)  # Bus 0, CE0
 spi.max_speed_hz = 1350000
 
-ADC_CHANNEL = 1  # MCP3008 CH1 (A1) where the sensor is now connected
+ADC_CHANNEL = 0  # MCP3008 CH1 (A1) where the sensor is now connected
 
 def read_adc(channel):
     """Reads analog value from MCP3008 channel (0–7)"""
