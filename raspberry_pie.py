@@ -15,10 +15,10 @@ spi = spidev.SpiDev()
 spi.open(0, 0)  # Bus 0, CE0
 spi.max_speed_hz = 1350000
 
-ADC_CHANNEL = 0  # MCP3008 CH0 (A0) where the sensor is connected
+ADC_CHANNEL = 1  # MCP3008 CH1 (A1) where the sensor is now connected
 
 def read_adc(channel):
-    """Reads analog value from MCP3008 channel (0-7)"""
+    """Reads analog value from MCP3008 channel (0–7)"""
     if not 0 <= channel <= 7:
         raise ValueError("MCP3008 channel must be 0–7")
     adc_response = spi.xfer2([1, (8 + channel) << 4, 0])
@@ -51,56 +51,5 @@ def collect_soil_data():
             moisture = read_soil_moisture()
             print(f"  [{timestamp}] Moisture: {moisture}%")
 
-            moisture_data.append({
-                "timestamp": timestamp,
-                "location": location,
-                "moisture": moisture,
-                "vegetation_type": "",  # Optional field
-            })
+            moisture_data_
 
-            if reading < 3:
-                time.sleep(15)
-
-    print("\nData collection complete!")
-
-# =======================
-# EXPORT TO EXCEL
-# =======================
-
-def export_data_to_excel():
-    df = pd.DataFrame(moisture_data)
-    excel_filename = os.path.join(image_folder, "soil_moisture_with_images.xlsx")
-    df.to_excel(excel_filename, index=False)
-    print(f"\nExcel saved as '{excel_filename}'")
-
-def create_excel_file():
-    now = datetime.now()
-    filename = os.path.join(image_folder, f"interrupted_{now.strftime('%Y%m%d_%H%M%S')}.xlsx")
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Data"
-    ws['A1'] = "This Excel file was created on interrupt."
-    ws['A2'] = now.strftime("%Y-%m-%d %H:%M:%S")
-    wb.save(filename)
-    print(f"Excel file '{filename}' created.")
-
-# =======================
-# MAIN EXECUTION
-# =======================
-
-if __name__ == "__main__":
-    try:
-        collect_soil_data()
-        export_data_to_excel()
-
-        print("\nRunning idle loop. Press Ctrl+C to generate an Excel file.")
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        create_excel_file()
-        print("Press Ctrl+C again to create another one or close the terminal to exit.")
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            create_excel_file()
