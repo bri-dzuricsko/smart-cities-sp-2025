@@ -71,6 +71,7 @@ try:
         time.sleep(15)
 
 except Exception as e:
-    print(f"❌
+    print(f"❌ Error: {e}")
+    handle_exit(None, None)
 
 
