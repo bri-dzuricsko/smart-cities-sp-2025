@@ -18,7 +18,7 @@ moisture_data = []
 
 def read_soil_status():
     value = GPIO.input(MOISTURE_PIN)
-    return "WET" if value == 1 else "DRY"  # Most modules: LOW = WET
+    return "WET" if value == 0 else "DRY"  # Most modules: LOW = WET
 
 def save_to_excel():
     df = pd.DataFrame(moisture_data)
