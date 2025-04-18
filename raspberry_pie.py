@@ -5,7 +5,7 @@ from datetime import datetime
 import signal
 import sys
 import os
-from picamera2 import Picamera2
+import subprocess
 
 # --- Setup ---
 MOISTURE_PIN = 17
@@ -17,10 +17,6 @@ os.makedirs(image_folder, exist_ok=True)
 
 moisture_data = []
 
-camera = Picamera2()
-camera.configure(camera.create_still_configuration())
-camera.start()
-
 # --- Functions ---
 
 def read_soil_status():
@@ -30,7 +26,18 @@ def read_soil_status():
 def capture_image():
     filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}.jpg"
     filepath = os.path.join(image_folder, filename)
-    camera.capture_file(filepath)
+    try:
+        subprocess.run([
+            "libcamera-still",
+            "-o", filepath,
+            "--width", "1024",
+            "--height", "768",
+            "--timeout", "1000",  # 1 second capture
+            "--nopreview"
+        ], check=True)
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Error capturing image: {e}")
+        return None
     return filename
 
 def save_to_excel():
@@ -43,13 +50,12 @@ def handle_exit(sig, frame):
     print("\n🛑 Ctrl+C detected. Saving data...")
     save_to_excel()
     GPIO.cleanup()
-    camera.stop()
     sys.exit(0)
 
 signal.signal(signal.SIGINT, handle_exit)
 
 # --- Main Loop ---
-print("🌱 Logging soil moisture & capturing photos every 15 seconds.")
+print("🌱 Logging soil moisture & capturing photos with libcamera every 15 seconds.")
 print("Press Ctrl+C to stop and save.\n")
 
 try:
@@ -65,7 +71,6 @@ try:
         time.sleep(15)
 
 except Exception as e:
-    print(f"❌ Error: {e}")
-    handle_exit(None, None)
+    print(f"❌
 
 
