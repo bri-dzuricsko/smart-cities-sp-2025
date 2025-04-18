@@ -1,4 +1,5 @@
 import RPi.GPIO as GPIO
+import smbus
 import time
 import pandas as pd
 from datetime import datetime
@@ -6,31 +7,34 @@ from openpyxl import Workbook
 import signal
 import sys
 
-# ==== CONFIGURATION ====
-
-MOISTURE_PIN = 17  # GPIO17 (physical pin 11)
-
-# ==== GPIO SETUP ====
+# ========== SETUP ==========
 
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(MOISTURE_PIN, GPIO.IN)
+GPIO.setwarnings(False)
+
+address = 0x48  # I2C device address (from Keyestudio docs)
+A0 = 0x40       # Analog channel 0
+bus = smbus.SMBus(1)  # Use I2C bus 1
 
 moisture_data = []
 excel_file = ""
 
-# ==== FUNCTIONS ====
+# ========== FUNCTIONS ==========
 
-def read_soil_status():
-    value = GPIO.input(MOISTURE_PIN)
-    return "WET" if value == 0 else "DRY"
+def read_soil_value():
+    bus.write_byte(address, A0)         # Select A0 channel
+    value = bus.read_byte(address)      # Read analog value (0–255)
+    return value
+
+def classify_moisture(value, threshold=80):
+    # You can adjust threshold if needed
+    return "WET" if value < threshold else "DRY"
 
 def save_to_excel():
-    global excel_file
     df = pd.DataFrame(moisture_data)
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    excel_file = f"soil_moisture_log_{timestamp}.xlsx"
-    df.to_excel(excel_file, index=False)
-    print(f"\n📁 Excel file saved: {excel_file}")
+    filename = f"soil_moisture_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    df.to_excel(filename, index=False)
+    print(f"\n📁 Excel file saved: {filename}")
 
 def handle_exit(sig, frame):
     print("\n🛑 Ctrl+C detected. Saving data...")
@@ -40,23 +44,30 @@ def handle_exit(sig, frame):
 
 signal.signal(signal.SIGINT, handle_exit)
 
-# ==== MAIN LOOP ====
+# ========== MAIN LOOP ==========
 
-print("🌱 Soil sensor is running. Press Ctrl+C to stop and save.\n")
+print("🌱 Soil moisture logging started. Reading from I²C ADC (A0).")
+print("Press Ctrl+C to stop and save.\n")
 
 try:
     while True:
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        status = read_soil_status()
-        print(f"[{timestamp}] Moisture: {status}")
+        raw_value = read_soil_value()
+        status = classify_moisture(raw_value)
+
+        print(f"[{timestamp}] Raw: {raw_value} → Moisture: {status}")
 
         moisture_data.append({
             "timestamp": timestamp,
+            "raw_value": raw_value,
             "status": status
         })
 
         time.sleep(15)
+
 except Exception as e:
     print(f"❌ Error: {e}")
-    handle_exit(None, None)
+    save_to_excel()
+    GPIO.cleanup()
+    sys.exit(1)
 
